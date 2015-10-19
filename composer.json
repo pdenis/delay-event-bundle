@@ -16,14 +16,14 @@
     },
     "require": {
         "php": ">=5.3.3",
-        "symfony/symfony":"~2",
-        "doctrine/mongodb-odm": "~1",
-        "doctrine/mongodb-odm-bundle" : "~3"
+        "symfony/symfony":"~2"
+    },
+    "suggest": {
+      "doctrine/mongodb-odm-bundle" : "Allow you to store event into mongoDB documents"
     },
     "autoload": {
-        "psr-0": {
+        "psr-4": {
             "Itkg\\DelayEventBundle": ""
         }
-    },
-    "target-dir": "Itkg/DelayEventBundle"
+    }
 }
