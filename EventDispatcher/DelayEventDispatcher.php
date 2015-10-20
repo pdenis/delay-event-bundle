@@ -39,7 +39,6 @@ class DelayEventDispatcher implements EventDispatcherInterface
      */
     public function dispatch($eventName, Event $event = null)
     {
-        echo $eventName;
         if ($event instanceof DelayEvent && $event->isDelayed()) {
             $event->setOriginalName($eventName);
             // Override event name to dispatch an delayable event
