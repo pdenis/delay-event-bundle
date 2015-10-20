@@ -8,7 +8,6 @@ php:
 sudo: false
 
 install:
-  - yes '' | pecl -q install mongo && echo "extension=mongo.so" >> `php --ini | grep "Loaded Configuration" | sed -e "s|.*:\s*||"`
   - composer install --prefer-source --no-interaction
 
 script: 
