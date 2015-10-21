@@ -67,8 +67,7 @@ class ProcessEventCommand extends ContainerAwareCommand
     {
         $this
             ->setName('itkg_delay_event:process')
-            ->setDescription('Process async events')
-            ->addArgument('n', InputArgument::OPTIONAL, 'Number of events to process', 1);
+            ->setDescription('Process async events');
     }
 
     /**
@@ -96,7 +95,7 @@ class ProcessEventCommand extends ContainerAwareCommand
                     break;
                 }
                 $event->setDelayed(false);
-                $this->eventProcessor->process($event); 
+                $this->eventProcessor->process($event);
                 $this->eventManager->delete($event);
 
             }
