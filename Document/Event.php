@@ -11,7 +11,7 @@ use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
  *
  * @ODM\Document(
  *   repositoryClass="Itkg\DelayEventBundle\Repository\EventRepository",
- *   collection="event"
+ *   collection="itkg_delay_event"
  * )
  * @ODM\DiscriminatorField(fieldName="type")
  * @ODM\InheritanceType("SINGLE_COLLECTION")

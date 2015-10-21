@@ -3,6 +3,8 @@
 namespace Itkg\DelayEventBundle\Command;
 
 use Itkg\DelayEventBundle\DomainManager\EventManager;
+use Itkg\DelayEventBundle\Exception\LockException;
+use Itkg\DelayEventBundle\Handler\LockHandlerInterface;
 use Itkg\DelayEventBundle\Model\Event;
 use Itkg\DelayEventBundle\Processor\EventProcessor;
 use Itkg\DelayEventBundle\Repository\EventRepository;
@@ -32,16 +34,28 @@ class ProcessEventCommand extends ContainerAwareCommand
     private $eventManager;
 
     /**
-     * @param EventManager    $eventManager
-     * @param EventRepository $eventRepository
-     * @param EventProcessor  $eventProcessor
-     * @param null|string     $name
+     * @var LockHandlerInterface
      */
-    public function __construct(EventManager $eventManager, EventRepository $eventRepository, EventProcessor $eventProcessor, $name = null)
-    {
+    private $lockHandler;
+
+    /**
+     * @param EventManager         $eventManager
+     * @param EventRepository      $eventRepository
+     * @param EventProcessor       $eventProcessor
+     * @param LockHandlerInterface $lockHandler
+     * @param null|string          $name
+     */
+    public function __construct(
+        EventManager $eventManager,
+        EventRepository $eventRepository,
+        EventProcessor $eventProcessor,
+        LockHandlerInterface $lockHandler,
+        $name = null
+    ) {
         $this->eventRepository = $eventRepository;
         $this->eventProcessor = $eventProcessor;
         $this->eventManager = $eventManager;
+        $this->lockHandler = $lockHandler;
 
         parent::__construct($name);
     }
@@ -61,26 +75,38 @@ class ProcessEventCommand extends ContainerAwareCommand
      * @param InputInterface  $input
      * @param OutputInterface $output
      *
+     * @throws LockException
+     * @throws \Exception
+     *
      * @return int|null|void
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $events = $this->eventRepository->findBy(array(), array('createdAt' => 1), $input->getArgument('n'));
+        if ($this->lockHandler->isLocked()) {
+            throw new LockException('Command is locked by another processus');
+        }
 
-        /** @var Event $event */
-        foreach ($events as $event) {
-            try {
-                /** @TODO : ADD LOGS */
+        $this->lockHandler->lock();
+
+        $exception = null;
+        try {
+            while (true) {
+                $event = $this->eventRepository->findFirstTodoEvent();
+                if (!$event) {
+                    break;
+                }
                 $event->setDelayed(false);
-
-                $this->eventProcessor->process($event);
+                $this->eventProcessor->process($event); 
                 $this->eventManager->delete($event);
-            } catch(\Exception $e) {
-                // @TODO : Manage rollback count maybe
-                $event->rollback();
-                die($e->getMessage());
-                $this->eventManager->save($event);
+
             }
+        } catch(\Exception $e) {
+            $exception = $e;
+        }
+        $this->lockHandler->release();
+
+        if ($exception) {
+            throw $exception;
         }
     }
 }

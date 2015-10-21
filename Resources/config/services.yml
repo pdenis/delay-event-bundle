@@ -1,12 +1,16 @@
 parameters:
     itkg_delay_event.domain_manager.event.class: Itkg\DelayEventBundle\DomainManager\EventManager
+    itkg_delay_event.domain_manager.lock.class: Itkg\DelayEventBundle\DomainManager\LockManager
     itkg_delay_event.repository.event.class: Itkg\DelayEventBundle\Repository\EventRepository
+    itkg_delay_event.repository.lock.class: Itkg\DelayEventBundle\Repository\LockRepository
     itkg_delay_event.model.event.class: Itkg\DelayEventBundle\Document\Event
+    itkg_delay_event.model.lock.class: Itkg\DelayEventBundle\Document\Lock
     itkg_delay_event.processor.event.class: Itkg\DelayEventBundle\Processor\EventProcessor
     itkg_delay_event.command.process_event.class: Itkg\DelayEventBundle\Command\ProcessEventCommand
     itkg_delay_event.event_dispatcher.class: Itkg\DelayEventBundle\EventDispatcher\DelayEventDispatcher
     itkg_delay_event.eligible_event_names: []
     itkg_delay_event.subscriber.save_delay.class: Itkg\DelayEventBundle\EventListener\SaveDelayEventSubscriber
+    itkg_delay_event.handler.command_lock.class: Itkg\DelayEventBundle\Handler\CommandLockHandler
 
 services:
     itkg_delay_event.event_dispatcher:
@@ -28,6 +32,20 @@ services:
         arguments:
             - %itkg_delay_event.model.event.class%
 
+    itkg_delay_event.domain_manager.lock:
+        class: %itkg_delay_event.domain_manager.lock.class%
+        arguments:
+            - %itkg_delay_event.model.lock.class%
+            - @doctrine.odm.mongodb.document_manager
+            - @itkg_delay_event.repository.lock
+
+    itkg_delay_event.repository.lock:
+        class: %itkg_delay_event.repository.lock.class%
+        factory_service: doctrine.odm.mongodb.document_manager
+        factory_method: getRepository
+        arguments:
+            - %itkg_delay_event.model.lock.class%
+
     itkg_delay_event.processor.event:
         class: %itkg_delay_event.processor.event.class%
         arguments:
@@ -39,6 +57,7 @@ services:
             - @itkg_delay_event.domain_manager.event
             - @itkg_delay_event.repository.event
             - @itkg_delay_event.processor.event
+            - @itkg_delay_event.handler.command_lock
         tags:
             -  { name: console.command }
             -  { name: monolog.logger, channel: itkg_delay_event_command }
@@ -49,3 +68,8 @@ services:
             - @itkg_delay_event.domain_manager.event
         tags:
             - { name: kernel.event_subscriber }
+
+    itkg_delay_event.handler.command_lock:
+        class: %itkg_delay_event.handler.command_lock.class%
+        arguments:
+            - @itkg_delay_event.domain_manager.lock
