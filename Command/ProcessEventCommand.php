@@ -82,12 +82,11 @@ class ProcessEventCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         if ($this->lockHandler->isLocked()) {
-            throw new LockException('Command is locked by another processus');
+            throw new LockException('Command is locked by another process');
         }
 
         $this->lockHandler->lock();
 
-        $exception = null;
         try {
             while (true) {
                 $event = $this->eventRepository->findFirstTodoEvent();
@@ -100,12 +99,10 @@ class ProcessEventCommand extends ContainerAwareCommand
 
             }
         } catch(\Exception $e) {
-            $exception = $e;
+            $this->lockHandler->release();
+            throw $e;
         }
         $this->lockHandler->release();
 
-        if ($exception) {
-            throw $exception;
-        }
     }
 }

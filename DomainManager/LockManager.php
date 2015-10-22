@@ -25,9 +25,11 @@ class LockManager implements LockManagerInterface
      * @var LockRepository
      */
     protected $lockRepository;
+
     /**
-     * @param string          $class
-     * @param ObjectManager   $om
+     * @param string         $class
+     * @param ObjectManager  $om
+     * @param LockRepository $lockRepository
      */
     public function __construct($class, ObjectManager $om, LockRepository $lockRepository)
     {
