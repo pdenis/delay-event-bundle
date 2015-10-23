@@ -28,7 +28,7 @@ class DelayEventDispatcher implements EventDispatcherInterface
      * @param EventDispatcherInterface $dispatcher
      * @param array                    $eligibleEventNames
      */
-    public function __construct(EventDispatcherInterface $dispatcher, array $eligibleEventNames = array())
+    public function __construct(EventDispatcherInterface $dispatcher, array $eligibleEventNames)
     {
         $this->dispatcher = $dispatcher;
         $this->eligibleEventNames = $eligibleEventNames;
@@ -39,7 +39,7 @@ class DelayEventDispatcher implements EventDispatcherInterface
      */
     public function dispatch($eventName, Event $event = null)
     {
-        if ($event instanceof DelayEvent && $event->isDelayed()) {
+        if ($this->isEventEligible($eventName, $event)) {
             $event->setOriginalName($eventName);
             // Override event name to dispatch an delayable event
             $event = new DelayableEvent($event);
@@ -110,5 +110,16 @@ class DelayEventDispatcher implements EventDispatcherInterface
     public function __call($method, $arguments)
     {
         return call_user_func_array(array($this->dispatcher, $method), $arguments);
+    }
+
+    /**
+     * @param String $eventName
+     * @param Event $event
+     *
+     * @return bool
+     */
+    private function isEventEligible($eventName, $event)
+    {
+        return $event instanceof DelayEvent && $event->isDelayed() && isset($this->eligibleEventNames[$eventName]);
     }
 }

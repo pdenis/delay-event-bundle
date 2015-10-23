@@ -11,11 +11,13 @@ use Itkg\DelayEventBundle\Model\Event;
 class EventRepository extends DocumentRepository
 {
     /**
+     * @param bool $failed
+     *
      * @return Event
      */
-    public function findFirstTodoEvent()
+    public function findFirstTodoEvent($failed = false)
     {
-        $events = $this->findBy(array(), array('createdAt' => 1), 1);
+        $events = $this->findBy(array('failed' => $failed), array('createdAt' => 1), 1);
 
         return array_pop($events);
     }

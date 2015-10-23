@@ -20,6 +20,16 @@ class Event extends BaseEvent
     protected $delayed = true;
 
     /**
+     * @var bool
+     */
+    protected $failed = false;
+
+    /**
+     * @var int
+     */
+    protected $tryCount = 0;
+
+    /**
      * @param bool $delayed
      */
     public function __construct($delayed = true)
@@ -64,5 +74,53 @@ class Event extends BaseEvent
         $this->originalName = $originalName;
 
         return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isFailed()
+    {
+        return $this->failed;
+    }
+
+    /**
+     * @param bool $failed
+     *
+     * @return $this
+     */
+    public function setFailed($failed)
+    {
+        $this->failed = $failed;
+
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getTryCount()
+    {
+        return $this->tryCount;
+    }
+
+    /**
+     * @param int $tryCount
+     *
+     * @return $this
+     */
+    public function setTryCount($tryCount)
+    {
+        $this->tryCount = $tryCount;
+
+        return $this;
+    }
+
+    /**
+     * Increase try counter
+     */
+    public function increaseTryCount()
+    {
+        $this->tryCount ++;
     }
 }

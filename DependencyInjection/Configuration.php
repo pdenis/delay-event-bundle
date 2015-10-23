@@ -20,8 +20,27 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder();
         $rootNode = $treeBuilder->root('itkg_delay_event');
         $rootNode->children()
-            ->arrayNode('event_names')
-                ->prototype('scalar')
+            ->arrayNode('processor')
+                ->children()
+                    ->arrayNode('retry_count')
+                        ->children()
+                            ->scalarNode('normal')->defaultValue(1)->end()
+                            ->scalarNode('critic')->defaultValue(1)->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+            ->arrayNode('events')
+                ->prototype('array')
+                    ->children()
+                        ->scalarNode('type')
+                            ->validate()
+                                ->ifTrue(function($v){ return !in_array($v, array('normal', 'critic')); })
+                                ->thenInvalid('%s is not a valid type')
+                            ->end()
+                            ->defaultValue('normal')
+                        ->end()
+                    ->end()
             ->end();
 
         return $treeBuilder;

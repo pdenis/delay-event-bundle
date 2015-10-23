@@ -29,24 +29,17 @@ class ProcessEventCommand extends ContainerAwareCommand
     private $eventProcessor;
 
     /**
-     * @var EventManager
-     */
-    private $eventManager;
-
-    /**
      * @var LockHandlerInterface
      */
     private $lockHandler;
 
     /**
-     * @param EventManager         $eventManager
      * @param EventRepository      $eventRepository
      * @param EventProcessor       $eventProcessor
      * @param LockHandlerInterface $lockHandler
      * @param null|string          $name
      */
     public function __construct(
-        EventManager $eventManager,
         EventRepository $eventRepository,
         EventProcessor $eventProcessor,
         LockHandlerInterface $lockHandler,
@@ -89,20 +82,16 @@ class ProcessEventCommand extends ContainerAwareCommand
 
         try {
             while (true) {
-                $event = $this->eventRepository->findFirstTodoEvent();
-                if (!$event) {
+                if (!$event = $this->eventRepository->findFirstTodoEvent()) {
                     break;
                 }
                 $event->setDelayed(false);
                 $this->eventProcessor->process($event);
-                $this->eventManager->delete($event);
-
             }
         } catch(\Exception $e) {
             $this->lockHandler->release();
             throw $e;
         }
         $this->lockHandler->release();
-
     }
 }

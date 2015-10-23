@@ -8,8 +8,9 @@ parameters:
     itkg_delay_event.processor.event.class: Itkg\DelayEventBundle\Processor\EventProcessor
     itkg_delay_event.command.process_event.class: Itkg\DelayEventBundle\Command\ProcessEventCommand
     itkg_delay_event.event_dispatcher.class: Itkg\DelayEventBundle\EventDispatcher\DelayEventDispatcher
-    itkg_delay_event.eligible_event_names: []
     itkg_delay_event.subscriber.save_delay.class: Itkg\DelayEventBundle\EventListener\SaveDelayEventSubscriber
+    itkg_delay_event.subscriber.remove_success.class: Itkg\DelayEventBundle\EventListener\RemoveSuccessedEventSubscriber
+    itkg_delay_event.subscriber.manage_fail.class: Itkg\DelayEventBundle\EventListener\ManageFailedEventSubscriber
     itkg_delay_event.handler.command_lock.class: Itkg\DelayEventBundle\Handler\CommandLockHandler
 
 services:
@@ -17,7 +18,7 @@ services:
         class: %itkg_delay_event.event_dispatcher.class%
         arguments:
             - @itkg_delay_event.event_dispatcher.parent
-            - %itkg_delay_event.eligible_event_names%
+            - %itkg_delay_event.event_names%
 
     itkg_delay_event.domain_manager.event:
         class: %itkg_delay_event.domain_manager.event.class%
@@ -50,6 +51,8 @@ services:
         class: %itkg_delay_event.processor.event.class%
         arguments:
             - @event_dispatcher
+            - %itkg_delay_event.processor.config%
+            - %itkg_delay_event.event_config%
 
     itkg_delay_event.command.process_event:
         class: %itkg_delay_event.command.process_event.class%
@@ -64,6 +67,20 @@ services:
 
     itkg_delay_event.subscriber.save_delay:
         class: %itkg_delay_event.subscriber.save_delay.class%
+        arguments:
+            - @itkg_delay_event.domain_manager.event
+        tags:
+            - { name: kernel.event_subscriber }
+
+    itkg_delay_event.subscriber.remove_success:
+        class: %itkg_delay_event.subscriber.remove_success.class%
+        arguments:
+            - @itkg_delay_event.domain_manager.event
+        tags:
+            - { name: kernel.event_subscriber }
+
+    itkg_delay_event.subscriber.manage_fail:
+        class: %itkg_delay_event.subscriber.manage_fail.class%
         arguments:
             - @itkg_delay_event.domain_manager.event
         tags:

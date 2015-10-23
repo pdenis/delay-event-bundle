@@ -40,4 +40,18 @@ class Event extends BaseEvent
      * @ODM\Boolean
      */
     protected $async = true;
+
+    /**
+     * @var bool
+     *
+     * @ODM\Boolean
+     */
+    protected $failed = false;
+
+    /**
+     * @var int
+     *
+     * @ODM\Int
+     */
+    protected $tryCount = 0;
 }
