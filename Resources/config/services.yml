@@ -57,7 +57,6 @@ services:
     itkg_delay_event.command.process_event:
         class: %itkg_delay_event.command.process_event.class%
         arguments:
-            - @itkg_delay_event.domain_manager.event
             - @itkg_delay_event.repository.event
             - @itkg_delay_event.processor.event
             - @itkg_delay_event.handler.command_lock

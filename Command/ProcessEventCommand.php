@@ -47,7 +47,6 @@ class ProcessEventCommand extends ContainerAwareCommand
     ) {
         $this->eventRepository = $eventRepository;
         $this->eventProcessor = $eventProcessor;
-        $this->eventManager = $eventManager;
         $this->lockHandler = $lockHandler;
 
         parent::__construct($name);
@@ -78,7 +77,7 @@ class ProcessEventCommand extends ContainerAwareCommand
             throw new LockException('Command is locked by another process');
         }
 
-        $this->lockHandler->lock();
+       // $this->lockHandler->lock();
 
         try {
             while (true) {

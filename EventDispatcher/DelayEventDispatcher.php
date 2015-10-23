@@ -120,6 +120,6 @@ class DelayEventDispatcher implements EventDispatcherInterface
      */
     private function isEventEligible($eventName, $event)
     {
-        return $event instanceof DelayEvent && $event->isDelayed() && isset($this->eligibleEventNames[$eventName]);
+        return $event instanceof DelayEvent && $event->isDelayed() && in_array($eventName, $this->eligibleEventNames);
     }
 }
