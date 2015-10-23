@@ -2,6 +2,9 @@
 
 namespace Itkg\DelayEventBundle\Processor;
 
+use Itkg\DelayEventBundle\Event\FailProcessedEvent;
+use Itkg\DelayEventBundle\Event\ProcessedEvents;
+use Itkg\DelayEventBundle\Event\SuccessProcessedEvent;
 use Itkg\DelayEventBundle\Model\Event;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -16,17 +19,41 @@ class EventProcessor implements EventProcessorInterface
     private $eventDispatcher;
 
     /**
-     * @param EventDispatcherInterface $eventDispatcher
+     * @var array
      */
-    public function __construct(EventDispatcherInterface $eventDispatcher)
+    private $config = array();
+
+    /**
+     * @var array
+     */
+    private $eventsConfig = array();
+
+    /**
+     * @param EventDispatcherInterface $eventDispatcher
+     * @param array                    $config
+     * @param array                    $eventsConfig
+     */
+    public function __construct(EventDispatcherInterface $eventDispatcher, array $config, array $eventsConfig)
     {
         $this->eventDispatcher = $eventDispatcher;
+        $this->config = $config;
+        $this->eventsConfig = $eventsConfig;
     }
+
     /**
      * {@inheritDoc}
      */
     public function process(Event $event)
     {
-        $this->eventDispatcher->dispatch($event->getOriginalName(), $event);
+        try {
+            $this->eventDispatcher->dispatch($event->getOriginalName(), $event);
+            $this->eventDispatcher->dispatch(ProcessedEvents::SUCCESS, new SuccessProcessedEvent($event));
+        } catch (\Exception $e) {
+            $maxRetryCount = $this->config['processor']['retry_count'][$this->eventsConfig[$event->getOriginalName()]['type']];
+            $this->eventDispatcher->dispatch(ProcessedEvents::FAIL, new FailProcessedEvent($event, $maxRetryCount));
+            if ($event->isFailed()) {
+                throw $e;
+            }
+        }
     }
 }

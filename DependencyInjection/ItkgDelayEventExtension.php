@@ -26,6 +26,7 @@ class ItkgDelayEventExtension extends Extension
         $loader->load('services.yml');
 
         $this->loadEventNames($container, $config);
+        $this->loadProcessorConfiguration($container, $config);
     }
 
     /**
@@ -34,8 +35,18 @@ class ItkgDelayEventExtension extends Extension
      */
     protected function loadEventNames(ContainerBuilder $container, array $config)
     {
-        if (isset($config['event_names'])) {
-            $container->setParameter('itkg_delay_event.event_names', $config['event_names']);
+        if (isset($config['events'])) {
+            $container->setParameter('itkg_delay_event.event_names', array_keys($config['events']));
+            $container->setParameter('itkg_delay_event.event_config', $config['events']);
         }
+    }
+
+    /**
+     * @param ContainerBuilder $container
+     * @param array            $config
+     */
+    protected function loadProcessorConfiguration(ContainerBuilder $container, array $config)
+    {
+        $container->setParameter('itkg_delay_event.processor.config', $config['processor']);
     }
 }
