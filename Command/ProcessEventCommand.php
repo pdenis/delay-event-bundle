@@ -77,7 +77,7 @@ class ProcessEventCommand extends ContainerAwareCommand
             throw new LockException('Command is locked by another process');
         }
 
-       // $this->lockHandler->lock();
+        $this->lockHandler->lock();
 
         try {
             while (true) {
