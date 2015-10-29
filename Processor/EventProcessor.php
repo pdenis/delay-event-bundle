@@ -49,7 +49,7 @@ class EventProcessor implements EventProcessorInterface
             $this->eventDispatcher->dispatch($event->getOriginalName(), $event);
             $this->eventDispatcher->dispatch(ProcessedEvents::SUCCESS, new SuccessProcessedEvent($event));
         } catch (\Exception $e) {
-            $maxRetryCount = $this->config['processor']['retry_count'][$this->eventsConfig[$event->getOriginalName()]['type']];
+            $maxRetryCount = $this->config['retry_count'][$this->eventsConfig[$event->getOriginalName()]['type']];
             $this->eventDispatcher->dispatch(ProcessedEvents::FAIL, new FailProcessedEvent($event, $maxRetryCount));
             if ($event->isFailed()) {
                 throw $e;
