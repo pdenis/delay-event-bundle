@@ -11,14 +11,27 @@ use Itkg\DelayEventBundle\Model\Event;
 class EventRepository extends DocumentRepository
 {
     /**
-     * @param bool $failed
+     * @param bool  $failed
+     * @param array $eventTypeIncluded
+     * @param array $eventTypeExcluded
      *
      * @return Event
      */
-    public function findFirstTodoEvent($failed = false)
+    public function findFirstTodoEvent($failed = false, array $eventTypeIncluded = [], array $eventTypeExcluded = [])
     {
-        $events = $this->findBy(array('failed' => $failed), array('createdAt' => 1), 1);
+        $qb = $this->createQueryBuilder();
+        $qb->field('failed')->equals($failed);
 
-        return array_pop($events);
+        if (!empty($eventTypeIncluded)) {
+            $qb->field('originalName')->in($eventTypeIncluded);
+        }
+
+        if (!empty($eventTypeExcluded)) {
+            $qb->field('originalName')->notIn($eventTypeExcluded);
+        }
+
+        $qb->sort('createdAt', 'asc');
+
+        return $qb->getQuery()->getSingleResult();
     }
 }

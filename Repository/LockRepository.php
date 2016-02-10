@@ -19,4 +19,17 @@ class LockRepository extends DocumentRepository
 
         return $qb->getQuery()->getSingleResult();
     }
+
+    /**
+     * @param string $channel
+     *
+     * @return Lock
+     */
+    public function findByChannel($channel)
+    {
+        $qb = $this->createQueryBuilder();
+        $qb->field('channel')->equals($channel);
+
+        return $qb->getQuery()->getSingleResult();
+    }
 }

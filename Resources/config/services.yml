@@ -61,6 +61,7 @@ services:
             - @itkg_delay_event.repository.event
             - @itkg_delay_event.processor.event
             - @itkg_delay_event.handler.command_lock
+            - %itkg_delay_event.channels%
         tags:
             -  { name: console.command }
             -  { name: monolog.logger, channel: itkg_delay_event_command }

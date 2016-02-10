@@ -23,31 +23,31 @@ class CommandLockHandler implements LockHandlerInterface
     }
 
     /**
-     * @return boolean
+     * {@inheritdoc}
      */
-    public function isLocked()
+    public function isLocked($channel)
     {
-        $lock = $this->lockManager->getLock();
+        $lock = $this->lockManager->getLock($channel);
 
         return $lock->isCommandLocked();
     }
 
     /**
-     * Create a lock
+     * {@inheritdoc}
      */
-    public function lock()
+    public function lock($channel)
     {
-        $lock = $this->lockManager->getLock();
+        $lock = $this->lockManager->getLock($channel);
         $lock->setCommandLocked(true);
         $this->lockManager->save($lock);
     }
 
     /**
-     * Release a lock
+     * {@inheritdoc}
      */
-    public function release()
+    public function release($channel)
     {
-        $lock = $this->lockManager->getLock();
+        $lock = $this->lockManager->getLock($channel);
         $lock->setCommandLocked(false);
         $this->lockManager->save($lock);
     }

@@ -5,6 +5,7 @@ namespace Itkg\DelayEventBundle\Command;
 use Itkg\DelayEventBundle\Handler\LockHandlerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -22,7 +23,8 @@ class UnlockCommand extends ContainerAwareCommand
      * @param null|string          $name
      */
     public function __construct(
-        LockHandlerInterface $lockHandler, $name = null) {
+        LockHandlerInterface $lockHandler, $name = null)
+    {
         $this->lockHandler = $lockHandler;
 
         parent::__construct($name);
@@ -35,7 +37,14 @@ class UnlockCommand extends ContainerAwareCommand
     {
         $this
             ->setName('itkg_delay_event:unlock')
-            ->setDescription('Unlock command');
+            ->setDescription('Unlock command')
+            ->addOption(
+                'channels',
+                'c',
+                InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED,
+                'Specify the channels to unlock (default: [\'default\'])',
+                ['default']
+            );
     }
 
     /**
@@ -46,7 +55,12 @@ class UnlockCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->lockHandler->release();
-
+        foreach ($input->getOption('channels') as $channel) {
+            $this->lockHandler->release($channel);
+            $output->writeln(sprintf(
+                'Channel <info>%s</info> unlocked.',
+                $channel
+            ));
+        }
     }
 }
