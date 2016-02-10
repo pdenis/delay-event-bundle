@@ -28,4 +28,11 @@ class Lock extends BaseLock
      * @ODM\Boolean
      */
     protected $commandLocked = false;
+
+    /**
+     * @var string
+     *
+     * @ODM\String
+     */
+    protected $channel = '';
 }
