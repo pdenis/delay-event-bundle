@@ -11,6 +11,7 @@ use Itkg\DelayEventBundle\Repository\EventRepository;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -34,20 +35,29 @@ class ProcessEventCommand extends ContainerAwareCommand
     private $lockHandler;
 
     /**
+     * @var array
+     */
+    private $channels;
+
+    /**
      * @param EventRepository      $eventRepository
      * @param EventProcessor       $eventProcessor
      * @param LockHandlerInterface $lockHandler
+     * @param array                $channels
      * @param null|string          $name
      */
     public function __construct(
         EventRepository $eventRepository,
         EventProcessor $eventProcessor,
         LockHandlerInterface $lockHandler,
+        array $channels = [],
         $name = null
-    ) {
+    )
+    {
         $this->eventRepository = $eventRepository;
         $this->eventProcessor = $eventProcessor;
         $this->lockHandler = $lockHandler;
+        $this->channels = $channels;
 
         parent::__construct($name);
     }
@@ -59,7 +69,14 @@ class ProcessEventCommand extends ContainerAwareCommand
     {
         $this
             ->setName('itkg_delay_event:process')
-            ->setDescription('Process async events');
+            ->setDescription('Process async events')
+            ->addOption(
+                'channel',
+                'c',
+                InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED,
+                'Specify the channels to process (default: [\'default\'])',
+                ['default']
+            );
     }
 
     /**
@@ -73,24 +90,49 @@ class ProcessEventCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        if ($this->lockHandler->isLocked()) {
-            throw new LockException('Command is locked by another process');
-        }
+        $channels = $input->getOption('channels');
 
-        $this->lockHandler->lock();
-
-        try {
-            while (true) {
-                if (!$event = $this->eventRepository->findFirstTodoEvent()) {
-                    break;
-                }
-                $event->setDelayed(false);
-                $this->eventProcessor->process($event);
+        foreach ($channels as $channel) {
+            if(!isset($this->channels[$channel])) {
+                $output->writeln(sprintf(
+                    '<error>Channel <info>%s</info> is not configured.</error>',
+                    $channel
+                ));
             }
-        } catch(\Exception $e) {
-            $this->lockHandler->release();
-            throw $e;
+
+            if ($this->lockHandler->isLocked($channel)) {
+                $output->writeln(
+                    sprintf(
+                        'Command is locked by another process for channel <info>%s</info>.',
+                        $channel
+                    )
+                );
+
+                continue;
+            }
+
+            $output->writeln(
+                sprintf(
+                    'Process events for channel <info>%s</info>',
+                    $channel
+                )
+            );
+
+            $this->lockHandler->lock($channel);
+
+            try {
+                while (true) {
+                    if (!$event = $this->eventRepository->findFirstTodoEvent(false, $this->channels[$channel]['include'], $this->channels[$channel]['exclude'])) {
+                        break;
+                    }
+                    $event->setDelayed(false);
+                    $this->eventProcessor->process($event);
+                }
+            } catch (\Exception $e) {
+                $output->writeln(sprintf('<error>%s</error>', $e->getMessage()));
+            }
+
+            $this->lockHandler->release($channel);
         }
-        $this->lockHandler->release();
     }
 }

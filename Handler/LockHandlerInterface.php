@@ -8,17 +8,27 @@ namespace Itkg\DelayEventBundle\Handler;
 interface LockHandlerInterface
 {
     /**
-     * @return boolean
+     * @param string $channel
+     *
+     * @return bool
      */
-    public function isLocked();
+    public function isLocked($channel);
 
     /**
      * Create a lock
+     *
+     * @param string $channel
+     *
+     * @return
      */
-    public function lock();
+    public function lock($channel);
 
     /**
      * Release a lock
+     *
+     * @param string $channel
+     *
+     * @return
      */
-    public function release();
+    public function release($channel);
 }

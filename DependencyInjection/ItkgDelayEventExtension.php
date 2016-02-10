@@ -22,11 +22,12 @@ class ItkgDelayEventExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+        $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.yml');
 
         $this->loadEventNames($container, $config);
         $this->loadProcessorConfiguration($container, $config);
+        $this->loadChannels($container, $config);
     }
 
     /**
@@ -48,5 +49,14 @@ class ItkgDelayEventExtension extends Extension
     protected function loadProcessorConfiguration(ContainerBuilder $container, array $config)
     {
         $container->setParameter('itkg_delay_event.processor.config', $config['processor']);
+    }
+
+    /**
+     * @param ContainerBuilder $container
+     * @param array            $config
+     */
+    private function loadChannels(ContainerBuilder $container, array $config)
+    {
+        $container->setParameter('itkg_delay_event.channels', $config['channels']);
     }
 }

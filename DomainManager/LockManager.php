@@ -67,14 +67,17 @@ class LockManager implements LockManagerInterface
     }
 
     /**
+     * @param string $channel
+     *
      * @return Lock
      */
-    public function getLock()
+    public function getLock($channel)
     {
-        $lock = $this->lockRepository->findLock();
+        $lock = $this->lockRepository->findByChannel($channel);
 
         if (!$lock) {
             $lock = $this->createNew();
+            $lock->setChannel($channel);
         }
 
         return $lock;

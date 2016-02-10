@@ -25,7 +25,9 @@ interface LockManagerInterface
     public function createNew();
 
     /**
+     * @param string $channel
+     *
      * @return Lock
      */
-    public function getLock();
+    public function getLock($channel);
 }
