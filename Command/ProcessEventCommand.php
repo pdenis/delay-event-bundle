@@ -90,7 +90,7 @@ class ProcessEventCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $channels = $input->getOption('channels');
+        $channels = $input->getOption('channel');
 
         foreach ($channels as $channel) {
             if(!isset($this->channels[$channel])) {
