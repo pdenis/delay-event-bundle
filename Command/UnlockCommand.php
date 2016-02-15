@@ -39,7 +39,7 @@ class UnlockCommand extends ContainerAwareCommand
             ->setName('itkg_delay_event:unlock')
             ->setDescription('Unlock command')
             ->addOption(
-                'channels',
+                'channel',
                 'c',
                 InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED,
                 'Specify the channels to unlock (default: [\'default\'])',
@@ -55,7 +55,7 @@ class UnlockCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        foreach ($input->getOption('channels') as $channel) {
+        foreach ($input->getOption('channel') as $channel) {
             $this->lockHandler->release($channel);
             $output->writeln(sprintf(
                 'Channel <info>%s</info> unlocked.',
