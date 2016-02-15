@@ -10,7 +10,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
- * class DelayEventDispatcher 
+ * class DelayEventDispatcher
  */
 class DelayEventDispatcher implements EventDispatcherInterface
 {
@@ -39,9 +39,14 @@ class DelayEventDispatcher implements EventDispatcherInterface
      */
     public function dispatch($eventName, Event $event = null)
     {
+        if (!$event instanceof DelayEvent) {
+            return $event;
+        }
+
         if ($this->isEventEligible($eventName, $event)) {
             $event->setOriginalName($eventName);
-            // Override event name to dispatch an delayable event
+
+            // Override event name to dispatch a delayed event
             $event = new DelayableEvent($event);
             $eventName = DelayableEvents::DELAY;
         }
@@ -113,13 +118,13 @@ class DelayEventDispatcher implements EventDispatcherInterface
     }
 
     /**
-     * @param String $eventName
-     * @param Event $event
+     * @param String     $eventName
+     * @param DelayEvent $event
      *
      * @return bool
      */
-    private function isEventEligible($eventName, $event)
+    private function isEventEligible($eventName, DelayEvent $event)
     {
-        return $event instanceof DelayEvent && $event->isDelayed() && in_array($eventName, $this->eligibleEventNames);
+        return $event->isDelayed() && in_array($eventName, $this->eligibleEventNames);
     }
 }
