@@ -93,7 +93,7 @@ class ProcessEventCommand extends ContainerAwareCommand
         $channels = $input->getOption('channel');
 
         foreach ($channels as $channel) {
-            if(!isset($this->channels[$channel])) {
+            if (!isset($this->channels[$channel])) {
                 $output->writeln(sprintf(
                     '<error>Channel <info>%s</info> is not configured.</error>',
                     $channel
@@ -120,6 +120,7 @@ class ProcessEventCommand extends ContainerAwareCommand
 
             $this->lockHandler->lock($channel);
 
+            $event = null;
             try {
                 while (true) {
                     if (!$event = $this->eventRepository->findFirstTodoEvent(false, $this->channels[$channel]['include'], $this->channels[$channel]['exclude'])) {
@@ -129,7 +130,16 @@ class ProcessEventCommand extends ContainerAwareCommand
                     $this->eventProcessor->process($event);
                 }
             } catch (\Exception $e) {
-                $output->writeln(sprintf('<error>%s</error>', $e->getMessage()));
+                if ($event instanceof Event) {
+                    $output->writeln(sprintf(
+                        '<info>[%s]</info> <error> An error occurred while processing event "%s".</error>',
+                        $channel,
+                        $event->getOriginalName()
+                    ));
+                }
+
+                $output->writeln(sprintf('<info>[%s]</info> <error>%s</error>', $e->getMessage(), $channel));
+                $output->writeln($e->getTraceAsString());
             }
 
             $this->lockHandler->release($channel);
