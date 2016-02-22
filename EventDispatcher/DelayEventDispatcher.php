@@ -40,6 +40,8 @@ class DelayEventDispatcher implements EventDispatcherInterface
     public function dispatch($eventName, Event $event = null)
     {
         if (!$event instanceof DelayEvent) {
+            $this->dispatcher->dispatch($eventName, $event);
+
             return $event;
         }
 
