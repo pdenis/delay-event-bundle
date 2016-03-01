@@ -138,7 +138,7 @@ class ProcessEventCommand extends ContainerAwareCommand
                     ));
                 }
 
-                $output->writeln(sprintf('<info>[%s]</info> <error>%s</error>', $e->getMessage(), $channel));
+                $output->writeln(sprintf('<info>[%s]</info> <error>%s</error>',$channel, $e->getMessage()));
                 $output->writeln($e->getTraceAsString());
             }
 
