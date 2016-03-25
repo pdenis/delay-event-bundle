@@ -31,7 +31,6 @@ class ClearMemoryEventSubscriber implements EventSubscriberInterface
     public function onFinish(Event $event)
     {
         $this->objectManager->flush();
-        $this->objectManager->clear();
     }
 
     /**
