@@ -98,6 +98,8 @@ class ProcessEventCommand extends ContainerAwareCommand
                     '<error>Channel <info>%s</info> is not configured.</error>',
                     $channel
                 ));
+                
+                continue;
             }
 
             if ($this->lockHandler->isLocked($channel)) {
