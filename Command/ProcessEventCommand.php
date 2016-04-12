@@ -98,6 +98,8 @@ class ProcessEventCommand extends ContainerAwareCommand
                     '<error>Channel <info>%s</info> is not configured.</error>',
                     $channel
                 ));
+                
+                continue;
             }
 
             if ($this->lockHandler->isLocked($channel)) {
@@ -138,7 +140,7 @@ class ProcessEventCommand extends ContainerAwareCommand
                     ));
                 }
 
-                $output->writeln(sprintf('<info>[%s]</info> <error>%s</error>', $e->getMessage(), $channel));
+                $output->writeln(sprintf('<info>[%s]</info> <error>%s</error>',$channel, $e->getMessage()));
                 $output->writeln($e->getTraceAsString());
             }
 
