@@ -98,7 +98,7 @@ class ProcessEventCommand extends ContainerAwareCommand
                     '<error>Channel <info>%s</info> is not configured.</error>',
                     $channel
                 ));
-                
+
                 continue;
             }
 
@@ -122,14 +122,18 @@ class ProcessEventCommand extends ContainerAwareCommand
 
             $this->lockHandler->lock($channel);
 
+            $processedEventsCount = 0;
             $event = null;
             try {
-                while (true) {
+                while ($this->channels[$channel]['events_limit_per_run'] === null
+                    || $processedEventsCount < $this->channels[$channel]['events_limit_per_run']
+                ) {
                     if (!$event = $this->eventRepository->findFirstTodoEvent(false, $this->channels[$channel]['include'], $this->channels[$channel]['exclude'])) {
                         break;
                     }
                     $event->setDelayed(false);
                     $this->eventProcessor->process($event);
+                    $processedEventsCount++;
                 }
             } catch (\Exception $e) {
                 if ($event instanceof Event) {
