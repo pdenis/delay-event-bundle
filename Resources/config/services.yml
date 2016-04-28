@@ -12,7 +12,6 @@ parameters:
     itkg_delay_event.subscriber.save_delay.class: Itkg\DelayEventBundle\EventListener\SaveDelayEventSubscriber
     itkg_delay_event.subscriber.remove_success.class: Itkg\DelayEventBundle\EventListener\RemoveSuccessedEventSubscriber
     itkg_delay_event.subscriber.manage_fail.class: Itkg\DelayEventBundle\EventListener\ManageFailedEventSubscriber
-    itkg_delay_event.subscriber.clear_memory.class: Itkg\DelayEventBundle\EventListener\ClearMemoryEventSubscriber
     itkg_delay_event.handler.command_lock.class: Itkg\DelayEventBundle\Handler\CommandLockHandler
 
 services:
@@ -93,13 +92,6 @@ services:
         class: %itkg_delay_event.subscriber.manage_fail.class%
         arguments:
             - @itkg_delay_event.domain_manager.event
-        tags:
-            - { name: kernel.event_subscriber }
-
-    itkg_delay_event.subscriber.clear_memory:
-        class: %itkg_delay_event.subscriber.clear_memory.class%
-        arguments:
-            - @object_manager
         tags:
             - { name: kernel.event_subscriber }
 
