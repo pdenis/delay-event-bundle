@@ -1,0 +1,6 @@
+#==[Symfony]==========================#
+/app/bootstrap.php.cache
+/bin
+
+#==[Vendor]===========================#
+/vendor/*
