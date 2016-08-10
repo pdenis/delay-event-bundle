@@ -2,14 +2,11 @@
 
 namespace Itkg\DelayEventBundle\Command;
 
-use Itkg\DelayEventBundle\DomainManager\EventManager;
-use Itkg\DelayEventBundle\Exception\LockException;
 use Itkg\DelayEventBundle\Handler\LockHandlerInterface;
 use Itkg\DelayEventBundle\Model\Event;
 use Itkg\DelayEventBundle\Processor\EventProcessor;
 use Itkg\DelayEventBundle\Repository\EventRepository;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -40,6 +37,8 @@ class ProcessEventCommand extends ContainerAwareCommand
     private $channels;
 
     /**
+     * ProcessEventCommand constructor.
+     *
      * @param EventRepository      $eventRepository
      * @param EventProcessor       $eventProcessor
      * @param LockHandlerInterface $lockHandler
@@ -52,8 +51,7 @@ class ProcessEventCommand extends ContainerAwareCommand
         LockHandlerInterface $lockHandler,
         array $channels = [],
         $name = null
-    )
-    {
+    ) {
         $this->eventRepository = $eventRepository;
         $this->eventProcessor = $eventProcessor;
         $this->lockHandler = $lockHandler;
@@ -63,7 +61,7 @@ class ProcessEventCommand extends ContainerAwareCommand
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function configure()
     {
@@ -80,13 +78,7 @@ class ProcessEventCommand extends ContainerAwareCommand
     }
 
     /**
-     * @param InputInterface  $input
-     * @param OutputInterface $output
-     *
-     * @throws LockException
-     * @throws \Exception
-     *
-     * @return int|null|void
+     * {@inheritdoc}
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -94,10 +86,12 @@ class ProcessEventCommand extends ContainerAwareCommand
 
         foreach ($channels as $channel) {
             if (!isset($this->channels[$channel])) {
-                $output->writeln(sprintf(
-                    '<error>Channel <info>%s</info> is not configured.</error>',
-                    $channel
-                ));
+                $output->writeln(
+                    sprintf(
+                        '<error>Channel <info>%s</info> is not configured.</error>',
+                        $channel
+                    )
+                );
 
                 continue;
             }
@@ -123,28 +117,51 @@ class ProcessEventCommand extends ContainerAwareCommand
             $this->lockHandler->lock($channel);
 
             $processedEventsCount = 0;
+            $maxProcessedQueueSize = $this->channels[$channel]['events_limit_per_run'];
             $event = null;
+
             try {
-                while ($this->channels[$channel]['events_limit_per_run'] === null
-                    || $processedEventsCount < $this->channels[$channel]['events_limit_per_run']
+                while (
+                    $maxProcessedQueueSize === null
+                    || $processedEventsCount < $maxProcessedQueueSize
                 ) {
-                    if (!$event = $this->eventRepository->findFirstTodoEvent(false, $this->channels[$channel]['include'], $this->channels[$channel]['exclude'])) {
+                    if (!$this->lockHandler->isLocked($channel)) {
+                        $output->writeln(
+                            sprintf(
+                                '<error>Lock for channel <info>%s</info> has been released outside of the process.</error>',
+                                $channel
+                            )
+                        );
+
                         break;
                     }
+
+                    $event = $this->eventRepository->findFirstTodoEvent(
+                        false,
+                        $this->channels[$channel]['include'],
+                        $this->channels[$channel]['exclude']
+                    );
+
+                    if (!$event instanceof Event) {
+                        break;
+                    }
+
                     $event->setDelayed(false);
                     $this->eventProcessor->process($event);
                     $processedEventsCount++;
                 }
             } catch (\Exception $e) {
                 if ($event instanceof Event) {
-                    $output->writeln(sprintf(
-                        '<info>[%s]</info> <error> An error occurred while processing event "%s".</error>',
-                        $channel,
-                        $event->getOriginalName()
-                    ));
+                    $output->writeln(
+                        sprintf(
+                            '<info>[%s]</info> <error> An error occurred while processing event "%s".</error>',
+                            $channel,
+                            $event->getOriginalName()
+                        )
+                    );
                 }
 
-                $output->writeln(sprintf('<info>[%s]</info> <error>%s</error>',$channel, $e->getMessage()));
+                $output->writeln(sprintf('<info>[%s]</info> <error>%s</error>', $channel, $e->getMessage()));
                 $output->writeln($e->getTraceAsString());
             }
 
