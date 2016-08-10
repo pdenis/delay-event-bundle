@@ -125,6 +125,17 @@ class ProcessEventCommand extends ContainerAwareCommand
                     $maxProcessedQueueSize === null
                     || $processedEventsCount < $maxProcessedQueueSize
                 ) {
+                    if (!$this->lockHandler->isLocked($channel)) {
+                        $output->writeln(
+                            sprintf(
+                                '<error>Lock for channel <info>%s</info> has been released outside of the process.</error>',
+                                $channel
+                            )
+                        );
+
+                        break;
+                    }
+
                     $event = $this->eventRepository->findFirstTodoEvent(
                         false,
                         $this->channels[$channel]['include'],
