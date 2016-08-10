@@ -37,9 +37,7 @@ class CommandLockHandler implements LockHandlerInterface
      */
     public function lock($channel)
     {
-        $lock = $this->lockManager->getLock($channel);
-        $lock->setCommandLocked(true);
-        $this->lockManager->save($lock);
+        $this->setLockStatusForChannel($channel, true);
     }
 
     /**
@@ -47,8 +45,17 @@ class CommandLockHandler implements LockHandlerInterface
      */
     public function release($channel)
     {
+        $this->setLockStatusForChannel($channel, false);
+    }
+
+    /**
+     * @param string $channel
+     * @param bool   $locked
+     */
+    private function setLockStatusForChannel($channel, $locked)
+    {
         $lock = $this->lockManager->getLock($channel);
-        $lock->setCommandLocked(false);
+        $lock->setCommandLocked($locked);
         $this->lockManager->save($lock);
     }
 }
