@@ -117,13 +117,15 @@ class ProcessEventCommand extends ContainerAwareCommand
             $this->lockHandler->lock($channel);
 
             $processedEventsCount = 0;
-            $maxProcessedQueueSize = $this->channels[$channel]['events_limit_per_run'];
+            $commandStartTime = time();
             $event = null;
 
             try {
-                while (
-                    $maxProcessedQueueSize === null
-                    || $processedEventsCount < $maxProcessedQueueSize
+                while (!$this->isLimitReached(
+                    $commandStartTime,
+                    $processedEventsCount,
+                    $this->channels[$channel]['duration_limit_per_run'],
+                    $this->channels[$channel]['events_limit_per_run'])
                 ) {
                     if (!$this->lockHandler->isLocked($channel)) {
                         $output->writeln(
@@ -167,5 +169,17 @@ class ProcessEventCommand extends ContainerAwareCommand
 
             $this->lockHandler->release($channel);
         }
+    }
+
+    /**
+     * @param int $commandStartTime
+     * @param int $processedEventsCount
+     * @param int $maxDurationPerRun
+     * @param int $maxProcessedEventPerRun
+     */
+    private function isLimitReached($commandStartTime, $processedEventsCount, $maxDurationPerRun, $maxProcessedEventPerRun)
+    {
+        return (($maxProcessedEventPerRun !== null && $processedEventsCount >= $maxProcessedEventPerRun)
+            || ($maxDurationPerRun !== null && (time() - $commandStartTime) >= $maxDurationPerRun));
     }
 }
