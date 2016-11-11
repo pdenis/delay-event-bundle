@@ -7,6 +7,7 @@ parameters:
     itkg_delay_event.model.lock.class: Itkg\DelayEventBundle\Document\Lock
     itkg_delay_event.processor.event.class: Itkg\DelayEventBundle\Processor\EventProcessor
     itkg_delay_event.command.process_event.class: Itkg\DelayEventBundle\Command\ProcessEventCommand
+    itkg_delay_event.command.process_dynamic_channel.class: Itkg\DelayEventBundle\Command\ProcessDynamicChannelCommand
     itkg_delay_event.command.unlock.class: Itkg\DelayEventBundle\Command\UnlockCommand
     itkg_delay_event.event_dispatcher.class: Itkg\DelayEventBundle\EventDispatcher\DelayEventDispatcher
     itkg_delay_event.subscriber.save_delay.class: Itkg\DelayEventBundle\EventListener\SaveDelayEventSubscriber
@@ -61,6 +62,16 @@ services:
             - @itkg_delay_event.repository.event
             - @itkg_delay_event.processor.event
             - @itkg_delay_event.handler.command_lock
+            - %itkg_delay_event.channels%
+        tags:
+            -  { name: console.command }
+            -  { name: monolog.logger, channel: itkg_delay_event_command }
+
+    itkg_delay_event.command.process_dynamic_channel:
+        class: %itkg_delay_event.command.process_dynamic_channel.class%
+        arguments:
+            - @itkg_delay_event.repository.event
+            - @itkg_delay_event.repository.lock
             - %itkg_delay_event.channels%
         tags:
             -  { name: console.command }
