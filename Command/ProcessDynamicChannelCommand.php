@@ -123,16 +123,21 @@ class ProcessDynamicChannelCommand extends ContainerAwareCommand
 
         $locks = $this->lockRepository->findAll();
         $lockNames = array();
+        $currentMachineLockNames = array();
         /** @var Lock $lock */
         foreach ($locks as $lock) {
             if ($lock->isCommandLocked()) {
-                $lockNames[] = str_replace(sprintf('%s_', $channel), '', $lock->getChannel())   ;
+                $lockName = str_replace(sprintf('%s_', $channel), '', $lock->getChannel());
+                $lockNames[] = $lockName;
+                if ($lock->getLockedBy() === $this->getHostName()) {
+                    $currentMachineLockNames[] = $lockName;
+                }
             }
         }
 
         $concurrentAvailableSlotsCount = $this->calculateAvailableSlotsCount(
             $fieldGroupIdentifierList,
-            $lockNames,
+            $currentMachineLockNames,
             $input->getOption('concurrent-jobs-count')
         );
 
@@ -145,7 +150,14 @@ class ProcessDynamicChannelCommand extends ContainerAwareCommand
             );
         }
 
-        $groupFieldIdentifierListToProcess = array_slice(array_diff($fieldGroupIdentifierList, $lockNames), 0, 3);
+        $groupFieldIdentifierListToProcess = array_slice(
+            array_diff(
+                $fieldGroupIdentifierList,
+                $lockNames
+            ),
+            0,
+            $input->getOption('concurrent-jobs-count')
+        );
 
         foreach ($groupFieldIdentifierListToProcess as $identifier) {
             // Create a new dynamic channel
@@ -193,5 +205,13 @@ class ProcessDynamicChannelCommand extends ContainerAwareCommand
     private function getEnv(InputInterface $input)
     {
         return $input->getParameterOption(array('--env', '-e'), getenv('SYMFONY_ENV') ?: 'dev');
+    }
+
+    /**
+     * @return string
+     */
+    private function getHostName()
+    {
+        return php_uname('n');
     }
 }

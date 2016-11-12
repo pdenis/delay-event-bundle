@@ -23,6 +23,11 @@ class Lock
     protected $lockedAt;
 
     /**
+     * @var string
+     */
+    protected $lockedBy;
+
+    /**
      * @return boolean
      */
     public function isCommandLocked()
@@ -41,9 +46,12 @@ class Lock
 
         if ($commandLocked) {
             $this->lockedAt = new \DateTime();
+            $this->lockedBy = php_uname('n');
         } else {
             $this->lockedAt = null;
+            $this->lockedBy = '';
         }
+
         return $this;
     }
 
@@ -68,10 +76,18 @@ class Lock
     }
 
     /**
+<<<<<<< HEAD
      * @return \DateTime
      */
     public function getLockedAt()
     {
         return $this->lockedAt;
+=======
+     * @return string
+     */
+    public function getLockedBy()
+    {
+        return $this->lockedBy;
+>>>>>>> Add locked by & concurrent jobs per machine
     }
 }
