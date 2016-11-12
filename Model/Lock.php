@@ -18,6 +18,11 @@ class Lock
     protected $channel = '';
 
     /**
+     * @var \DateTime
+     */
+    protected $lockedAt;
+
+    /**
      * @return boolean
      */
     public function isCommandLocked()
@@ -34,6 +39,11 @@ class Lock
     {
         $this->commandLocked = $commandLocked;
 
+        if ($commandLocked) {
+            $this->lockedAt = new \DateTime();
+        } else {
+            $this->lockedAt = null;
+        }
         return $this;
     }
 
@@ -55,5 +65,13 @@ class Lock
         $this->channel = $channel;
 
         return $this;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getLockedAt()
+    {
+        return $this->lockedAt;
     }
 }

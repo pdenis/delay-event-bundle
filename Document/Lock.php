@@ -35,4 +35,11 @@ class Lock extends BaseLock
      * @ODM\String
      */
     protected $channel = '';
+
+    /**
+     * @var \DateTime
+     *
+     * @ODM\Date
+     */
+    protected $lockedAt;
 }
