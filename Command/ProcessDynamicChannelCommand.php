@@ -126,8 +126,8 @@ class ProcessDynamicChannelCommand extends ContainerAwareCommand
         $currentMachineLockNames = array();
         /** @var Lock $lock */
         foreach ($locks as $lock) {
-            if ($lock->isCommandLocked()) {
-                $lockName = str_replace(sprintf('%s_', $channel), '', $lock->getChannel());
+            $lockName = str_replace(sprintf('%s_', $channel), '', $lock->getChannel());
+            if ($lock->isCommandLocked() && in_array($lockName, $fieldGroupIdentifierList)) {
                 $lockNames[] = $lockName;
                 if ($lock->getLockedBy() === $this->getHostName()) {
                     $currentMachineLockNames[] = $lockName;
