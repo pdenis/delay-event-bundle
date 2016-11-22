@@ -76,18 +76,17 @@ class Lock
     }
 
     /**
-<<<<<<< HEAD
      * @return \DateTime
      */
     public function getLockedAt()
     {
         return $this->lockedAt;
-=======
+    }
+    /**
      * @return string
      */
     public function getLockedBy()
     {
         return $this->lockedBy;
->>>>>>> Add locked by & concurrent jobs per machine
     }
 }

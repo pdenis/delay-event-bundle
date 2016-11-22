@@ -174,7 +174,6 @@ class ProcessDynamicChannelCommand extends ContainerAwareCommand
             $process->setWorkingDirectory($this->getWorkingDir());
             $process->start();
         }
-
     }
 
     /**
@@ -200,6 +199,8 @@ class ProcessDynamicChannelCommand extends ContainerAwareCommand
     }
 
     /**
+     * @param InputInterface $input
+     *
      * @return string
      */
     private function getEnv(InputInterface $input)
